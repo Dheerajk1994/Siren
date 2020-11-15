@@ -1,7 +1,10 @@
 const Discord = require('discord.js');
+var youtubeApiService = require('./YouTubeAPIService');
 const {
     SIREN_PREFIX,
     BOT_TOKEN,
+    YT_API_KEY,
+    YT_BASE_REQUEST_URL,
     PLAY_COMMAND,
     PAUSE_COMMAND,
     SKIP_COMMAND,
@@ -10,6 +13,7 @@ const {
 
 const ytdl = require('ytdl-core');
 const { queue } = require('async');
+const { url } = require('inspector');
 const musicQueue = new Map();
 
 const client = new Discord.Client();
@@ -20,21 +24,20 @@ client.once('ready', () => {
 });
 
 client.on('message', async message => {
-    console.log(SIREN_PREFIX)
     if (message.author.bot || !message.content.startsWith(SIREN_PREFIX)) return;
     console.log("command receieved :" + message.content);
     const serverQueue = musicQueue.get(message.guild.id);
 
-    const command = message.content.split(" ");
+    const command = message.content.split(" ")
     console.log(command[0])
-    switch(command[0]){
-        case SIREN_PREFIX + PLAY_COMMAND :
+    switch (command[0]) {
+        case SIREN_PREFIX + PLAY_COMMAND:
             executePlayCommand(message, serverQueue);
             break;
-        case SIREN_PREFIX + SKIP_COMMAND :
+        case SIREN_PREFIX + SKIP_COMMAND:
             executeSkipCommand(message, serverQueue);
             break;
-        case SIREN_PREFIX + STOP_COMMAND :
+        case SIREN_PREFIX + STOP_COMMAND:
             executeStopCommand(message, serverQueue);
             break;
     }
@@ -54,8 +57,21 @@ async function executePlayCommand(message, serverQueue) {
             "I need permissions to connect and speak in your voice channel!"
         );
     }
+    makeUrlCall(message, serverQueue, voiceChannel);
+}
 
-    const songInfo = await ytdl.getInfo(args[1]);
+async function makeUrlCall(message, serverQueue, voiceChannel) {
+    //const songInfo = await ytdl.getInfo(args[1]);
+    const query = message.content.substring(SIREN_PREFIX + PLAY_COMMAND + " ")
+    await youtubeApiService.requestVideoUrlFromQuery(query, YT_API_KEY, " ")
+        .then((url) => {
+            setupSong(url, message, serverQueue, voiceChannel)
+        })
+}
+
+async function setupSong(url, message, serverQueue, voiceChannel) {
+
+    const songInfo = await ytdl.getInfo(String(url));
     const song = {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url
@@ -75,41 +91,41 @@ async function executePlayCommand(message, serverQueue) {
         console.log("added song url to songs array " + song.url);
         queueContruct.songs.push(song);
 
-        try{
+        try {
             console.log("bot is joining voice channel")
             var connection = await voiceChannel.join();
             queueContruct.connection = connection;
             playSong(message.guild, queueContruct.songs[0]);
         }
-        catch(err){
+        catch (err) {
             console.log(err);
             queue.delete(message.guild.id);
             return message.channel.send(err)
         }
     }
-    else{
+    else {
         serverQueue.songs.push(song);
         console.log("added song url to songs array " + song.url);
         return message.channel.send(song.title + " has been added to the queue. Queue size " + serverQueue.songs.length);
     }
 }
 
-async function executeStopCommand(message, serverQueue){
-    if(serverQueue){
+async function executeStopCommand(message, serverQueue) {
+    if (serverQueue) {
         serverQueue.songs = [];
         serverQueue.connection.dispatcher.end();
     }
 }
 
-async function executeSkipCommand(message, serverQueue){
-    if(serverQueue){
+async function executeSkipCommand(message, serverQueue) {
+    if (serverQueue) {
         serverQueue.connection.dispatcher.end()
-    } 
+    }
 }
 
-function playSong(guild, song){
+function playSong(guild, song) {
     const sq = musicQueue.get(guild.id);
-    if(!song){
+    if (!song) {
         sq.voiceChannel.leave();
         musicQueue.delete(guild.id);
         return;
