@@ -15,8 +15,7 @@ async function requestVideoUrlFromQuery(query, ytapikey, ytbaseurl) {
                     return resolve(url)
                 })
                 .catch((err) => {
-                    console.log(err)
-                    return resolve(err)
+                    return Error
                 })
         }
     )
