@@ -138,7 +138,12 @@ function playSong(guild, song) {
             sq.songs.shift();
             playSong(guild, sq.songs[0]);
         })
-        .on("error", error => console.error(error));
+        .on("error", error => {
+            console.error(error);
+            sq.textChannel.send("Error playing " + song.title + ". Auto skipping.");
+            sq.songs.shift();
+            playSong(guild, sq.songs[0]);
+        });
 
     dispatcher.setVolumeLogarithmic(sq.volume / 5);
     sq.textChannel.send("Now playing " + song.title)
