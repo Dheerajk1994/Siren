@@ -13,7 +13,6 @@ const {
 
 const ytdl = require('ytdl-core');
 const { queue } = require('async');
-const { url } = require('inspector');
 const musicQueue = new Map();
 
 const client = new Discord.Client();
@@ -29,7 +28,6 @@ client.on('message', async message => {
     const serverQueue = musicQueue.get(message.guild.id);
 
     const command = message.content.split(" ")
-    console.log(command[0])
     switch (command[0]) {
         case SIREN_PREFIX + PLAY_COMMAND:
             executePlayCommand(message, serverQueue);
@@ -57,20 +55,46 @@ async function executePlayCommand(message, serverQueue) {
             "I need permissions to connect and speak in your voice channel!"
         );
     }
-    makeUrlCall(message, serverQueue, voiceChannel);
+
+    const query = message.content.substring(message.content.indexOf(' ') + 1);
+    if (isValidUrl(query)) {
+        setupSong(query, message, serverQueue, voiceChannel);
+    }
+    else {
+        makeUrlCall(query, message, serverQueue, voiceChannel);
+    }
 }
 
-async function makeUrlCall(message, serverQueue, voiceChannel) {
-    //const songInfo = await ytdl.getInfo(args[1]);
-    const query = message.content.substring(SIREN_PREFIX + PLAY_COMMAND + " ")
-    await youtubeApiService.requestVideoUrlFromQuery(query, YT_API_KEY, " ")
-        .then((url) => {
-            setupSong(url, message, serverQueue, voiceChannel)
-        })
+async function makeUrlCall(query, message, serverQueue, voiceChannel) {
+    console.log("makeUrlCall")
+    try {
+        await youtubeApiService.requestVideoUrlFromQuery(query, YT_API_KEY, " ")
+            .then((url) => {
+                setupSong(url, message, serverQueue, voiceChannel)
+            })
+            .catch(err => {
+                console.log(err);
+                return message.channel.send("Sorry but I was unable to get the associated url for that.")
+            })
+    }
+    catch(error){
+        console.log(error) 
+        return message.channel.send("Sorry but I was unable to get the associated url for that.")
+    }
+}
+
+function isValidUrl(string) {
+    try {
+        new URL(string);
+    } catch (e) {
+        return false;
+    }
+
+    return true;
 }
 
 async function setupSong(url, message, serverQueue, voiceChannel) {
-
+    console.log("setupSong")
     const songInfo = await ytdl.getInfo(String(url));
     const song = {
         title: songInfo.videoDetails.title,
@@ -106,6 +130,9 @@ async function setupSong(url, message, serverQueue, voiceChannel) {
     else {
         serverQueue.songs.push(song);
         console.log("added song url to songs array " + song.url);
+        if(!serverQueue.playing){
+            playSong(message.guild, serverQueue.songs[0]);
+        }
         return message.channel.send(song.title + " has been added to the queue. Queue size " + serverQueue.songs.length);
     }
 }
@@ -113,6 +140,7 @@ async function setupSong(url, message, serverQueue, voiceChannel) {
 async function executeStopCommand(message, serverQueue) {
     if (serverQueue) {
         serverQueue.songs = [];
+        serverQueue.playing = false;
         serverQueue.connection.dispatcher.end();
     }
 }
@@ -138,7 +166,12 @@ function playSong(guild, song) {
             sq.songs.shift();
             playSong(guild, sq.songs[0]);
         })
-        .on("error", error => console.error(error));
+        .on("error", error => {
+            console.error(error);
+            sq.textChannel.send("Error playing " + song.title + ". Auto skipping.");
+            sq.songs.shift();
+            playSong(guild, sq.songs[0]);
+        });
 
     dispatcher.setVolumeLogarithmic(sq.volume / 5);
     sq.textChannel.send("Now playing " + song.title)
