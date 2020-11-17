@@ -1,7 +1,27 @@
-const { GuildEmojiRoleManager } = require('discord.js');
-const { google } = require('googleapis')
+const { google } = require('googleapis');
+const setup = require('./setupSong');
 
-async function requestVideoUrlFromQuery(query, ytapikey, ytbaseurl) {
+const YT_API_KEY = require('./config.json')
+
+async function makeUrlCall(query, message, currentQueue, globalMap, voiceChannel) {
+    console.log("makeUrlCall")
+    try {
+        await requestVideoUrlFromQuery(query, YT_API_KEY, " ")
+            .then((url) => {
+                setup.setupSong(url, message, currentQueue, globalMap, voiceChannel)
+            })
+            .catch(err => {
+                console.log(err);
+                return message.channel.send("Sorry but I was unable to get the associated url for that.")
+            })
+    }
+    catch(error){
+        console.log(error) 
+        return message.channel.send("Sorry but I was unable to get the associated url for that.")
+    }
+}
+
+async function requestVideoUrlFromQuery(query, ytapikey) {
     return new Promise(
         resolve => {
             google.youtube('v3').search.list({
@@ -22,6 +42,6 @@ async function requestVideoUrlFromQuery(query, ytapikey, ytbaseurl) {
 }
 
 module.exports = {
-    requestVideoUrlFromQuery: requestVideoUrlFromQuery
+    makeUrlCall : makeUrlCall 
 };
 
