@@ -3,7 +3,14 @@ const ytdl = require('ytdl-core');
 
 async function setupSong(url, message, currentQueue, globalMap, voiceChannel) {
     console.log("setupSong")
-    const songInfo = await ytdl.getInfo(String(url));
+    let songInfo = null
+    try{
+        songInfo = await ytdl.getInfo(String(url));
+    }
+    catch(err){
+        console.log("ytdl getInfo error")
+        return message.channel.send("Sorry I was unable to get the info for that request.")
+    }
     const song = {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url

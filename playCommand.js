@@ -20,8 +20,8 @@ async function executePlayCommand(message, currentQueue, globalMap) {
         setup.setupSong(query, message, currentQueue, globalMap, voiceChannel);
     }
     else {
-        return message.channel.send("Scaboodle has disabled YT Direct Term search for now. Please use urls.")
-        //ytApiService.makeUrlCall(query, message, currentQueue, globalMap, voiceChannel);
+        //return message.channel.send("Scaboodle has disabled YT Direct Term search for now. Please use urls.")
+        ytApiService.makeUrlCall(query, message, currentQueue, globalMap, voiceChannel);
     }
 }
 
