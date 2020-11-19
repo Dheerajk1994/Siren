@@ -23,6 +23,7 @@ client.once('ready', () => {
 
 client.on('message', async message => {
     if (message.author.bot || !message.content.startsWith(SIREN_PREFIX)) return;
+
     console.log("command receieved :" + message.content);
     const currentQueue = serverMap.get(message.guild.id);
 
