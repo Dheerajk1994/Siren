@@ -1,5 +1,4 @@
 const ytdl = require('ytdl-core');
-const idleController = require('./idleOut')
 
 var idler = null;
 
