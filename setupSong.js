@@ -1,5 +1,6 @@
 const player = require('./playSong')
 const ytdl = require('ytdl-core');
+const utils = require('./utils')
 
 async function setupSong(url, message, currentQueue, globalMap, voiceChannel) {
     console.log("setupSong")
@@ -23,7 +24,7 @@ async function setupSong(url, message, currentQueue, globalMap, voiceChannel) {
             connection: null,
             songs: [],
             volume: 5,
-            playing: true
+            playing: utils.PlayStates.STOPPED
         };
 
         globalMap.set(message.guild.id, queueContruct);
@@ -45,7 +46,7 @@ async function setupSong(url, message, currentQueue, globalMap, voiceChannel) {
     else {
         currentQueue.songs.push(song);
         console.log("added song url to songs array " + song.url);
-        if(!currentQueue.playing){
+        if(currentQueue.playing == utils.PlayStates.STOPPED){
             player.playSong(message.guild, currentQueue.songs[0], globalMap);
         }
         return message.channel.send(song.title + " has been added to the queue. Queue size " + currentQueue.songs.length);
