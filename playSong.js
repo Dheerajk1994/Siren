@@ -1,5 +1,6 @@
 const ytdl = require('ytdl-core');
 const utils = require('./utils')
+const fs = require('fs')
 
 var idler = null;
 
@@ -16,26 +17,32 @@ function playSong(guild, song, globalMap) {
     }
     console.log("playSong : " + song.url);
     sq.playing = utils.PlayStates.PLAYING;
-    if(idler){
+    if (idler) {
         clearInterval(idler);
         idler = null;
     }
-    const dispatcher = sq.connection
-        .playStream(ytdl(song.url))
-        .on("finish", () => {
-            skipSong(guild, sq, globalMap);
-        })
-        .on("error", error => {
-            console.error(error);
-            sq.textChannel.send("Error playing " + song.title + ". Auto skipping.");
-            skipSong(guild, sq, globalMap);
-        });
 
-    dispatcher.setVolumeLogarithmic(sq.volume / 5);
-    sq.textChannel.send("Now playing " + song.title + " " + song.url)
+    var stream = ytdl(song.url)
+    stream.pipe(fs.createWriteStream('tmp_buf_audio.mp3'))
+        .on('end', () => {
+            const dispatcher = sq.connection
+                .playStream(fs.createReadStream('tmp_buf_audio.mp3'))
+                .on("finish", () => {
+                    skipSong(guild, sq, globalMap);
+                })
+                .on("error", error => {
+                    console.error(error);
+                    sq.textChannel.send("Error playing " + song.title + ". Auto skipping.");
+                    skipSong(guild, sq, globalMap);
+                });
+
+            dispatcher.setVolumeLogarithmic(sq.volume / 5);
+            sq.textChannel.send("Now playing " + song.title + " " + song.url)
+        })
+
 }
 
-function skipSong(guild, sq, globalMap){
+function skipSong(guild, sq, globalMap) {
     sq.songs.shift();
     playSong(guild, sq.songs[0], globalMap);
 }
