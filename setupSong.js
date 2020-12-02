@@ -1,5 +1,5 @@
 const player = require('./playSong')
-const ytdl = require('ytdl-core');
+const ytdl = require('ytdl-core-discord');
 const utils = require('./utils')
 
 async function setupSong(url, message, currentQueue, globalMap, voiceChannel) {

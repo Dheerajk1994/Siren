@@ -1,4 +1,4 @@
-const ytdl = require('ytdl-core');
+const ytdl = require('ytdl-core-discord');
 const utils = require('./utils')
 
 var idler = null;
@@ -20,8 +20,14 @@ function playSong(guild, song, globalMap) {
         clearInterval(idler);
         idler = null;
     }
+
+    let stream = ytdl(song.url,{
+	    filter: "audioonly",
+	    opusEncoded: true,
+	    encoderArgs:['-af', 'bass=g=10,dynaudnorm=f=200']
+    });
     const dispatcher = sq.connection
-        .play(ytdl(song.url))
+        .playStream(stream)
         .on("finish", () => {
             skipSong(guild, sq, globalMap);
         })
