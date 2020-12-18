@@ -21,7 +21,7 @@ function playSong(guild, song, globalMap) {
         idler = null;
     }
     const dispatcher = sq.connection
-        .play(ytdl(song.url))
+        .play(ytdl(song.url, { filter : 'audioonly' }))
         .on("finish", () => {
             skipSong(guild, sq, globalMap);
         })
