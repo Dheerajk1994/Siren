@@ -8,7 +8,7 @@ Installation:
 Config.JSON
   - You will need to provide a config.json file with the required APIS and commands. This way your API keys will be kept hidden and you have greater control on the commands the bot responds to.
 Sample config.json file:
-`
+```
 {
     "SIREN_PREFIX":"!",
     "BOT_TOKEN":"<DISCORD BOT TOKEN - CAN BE CREATED THROUGH DISCORD DEV PORTAL>",
@@ -23,7 +23,7 @@ Sample config.json file:
     "PAUSE_COMMAND" : "pause",
     "RESUME_COMMAND" : "resume"
 }
-`
+```
 Further Development:
   - A SQL server to allow users to add songs to their personal playlist
   - A HTML scraper so that the bot doesnt have to depend on the Google API
