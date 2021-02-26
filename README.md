@@ -10,7 +10,7 @@ You will need to provide a config.json file with the required APIS and commands.
 Sample config.json file:
 ```
 {
-    "SIREN_PREFIX":"!",
+    "SIREN_PREFIX":"!", //Sympol preceding the commands eg: !play or $play or :Dplay - useful if you have multiple bots 
     "BOT_TOKEN":"<DISCORD BOT TOKEN - CAN BE CREATED THROUGH DISCORD DEV PORTAL>",
     "YT_API_KEY":"<YOUTUBE API KEY - YOU CAN CREATE ONE IN GOOGLE CLOUD PORTAL - FREE VERSION LIMITS TO 100 UNIT OF CALLS PER DAY>",
     "YT_BASE_REQUEST_URL":"https://www.googleapis.com/youtube/v3/search",
@@ -20,7 +20,6 @@ Sample config.json file:
     "PAUSE_COMMAND" : "pause",
     "SKIP_COMMAND" : "skip",
     "STOP_COMMAND" : "stop",
-    "PAUSE_COMMAND" : "pause",
     "RESUME_COMMAND" : "resume"
 }
 ```
